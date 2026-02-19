@@ -15,8 +15,7 @@ namespace GameProg2_Project1FirstPlayable_NickPD
         public int[] DamageRange { get; }
         public string DamageRangeDescription { get; }
         public string Type { get; set; } // may name them boss, barbarian etc, would be class but classes are a code thing
-
-        public bool isInFort = false;
+        public bool _isInFort { get; set; }
 
         public Enemy(int x, int y, int health, int[] damageRange, string damageRangeDescription, string type)
         {
@@ -27,5 +26,22 @@ namespace GameProg2_Project1FirstPlayable_NickPD
             DamageRangeDescription = damageRangeDescription;
             Type = type;
         }
+
+        //public (int newY, int newX) MoveToward(Player player) // FIX REPLACE MOVEMENT LATER
+        //{
+        //    int newY = Y;
+        //    int newX = X;
+
+        //    if (Y < player.Y)
+        //        newY++;
+        //    else if (Y > player.Y)
+        //        newY--;
+        //    else if (X < player.X)
+        //        newX++;
+        //    else if (X > player.X)
+        //        newX--;
+
+        //    return (newY, newX);
+        //}
     }
 }

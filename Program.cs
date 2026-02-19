@@ -14,21 +14,21 @@ namespace GameProg2_Project1FirstPlayable_NickPD
 
         static Enemy[] enemies =                // all our enemies with a new type "name"
         {
-            new Enemy(1, 9, 16, new int[]{2,3,4,5}, "2-5", "Barbarian"),
+            new Enemy(1, 9, 16, new int[]{2,3,4,5}, "2-5", "Barbarian"),        // Barbarians are the most volatile
             new Enemy(7, 10, 16, new int[]{2,3,4,5}, "2-5", "Barbarian"),
-            new Enemy(4, 11, 16, new int[]{3,4}, "3-4", "Myrmidon"),
-            new Enemy(8, 2, 32, new int[]{3,4,5,6}, "3-6", "Boss Barbarian"),
+            new Enemy(4, 11, 16, new int[]{3,4}, "3-4", "Myrmidon"),            // More consistent barbarians
+            new Enemy(8, 2, 32, new int[]{3,4,5,6}, "3-6", "Boss Barbarian"),   // Stronger than average Barbarian with 2x health
             new Enemy(6, 3, 16, new int[]{2,3,4,5}, "2-5", "Barbarian"),
             new Enemy(7, 4, 16, new int[]{3,4}, "3-4", "Myrmidon"),
-            new Enemy(8, 3, 12, new int[]{4}, "4", "Mage"),
+            new Enemy(8, 3, 12, new int[]{4}, "4", "Mage"),                     // Higher damage than average but lowest health
             new Enemy(9, 4, 16, new int[]{3,4}, "3-4", "Myrmidon"),
             new Enemy(10, 3, 16, new int[]{2,3,4,5}, "2-5","Barbarian"),
             new Enemy(10, 7, 12, new int[]{4}, "4", "Mage")
         };
 
-        static Player player = new Player(15, 2); // new player with new coordinates
+        static Player player = new Player(15, 2); // 15th line down from the actual map, not including border, 2nd line to the right.
 
-        static bool isInFort = false;           // dumb "if inside fort" bool
+        static bool isInFort = false;           // dumb "if inside fort" bool // FIX WHY IS IT IN HALF THE CLASSES?
 
         static Random random = new Random();
 
@@ -70,21 +70,20 @@ namespace GameProg2_Project1FirstPlayable_NickPD
                 return;
             }
 
-            player.Y = newY;    // then set new position
-            player.X = newX;    // now we can check for sparkles because we want the player to be on top of them first.
+            player.SetPosition(newX, newY);      // then set new position, now we can check for sparkles because we want the player to be on top of them first.
 
             isInFort = map.IsFort(player.Y, player.X);
             if (map.IsFort(player.Y, player.X))
             {
-                Map.isInFort = true;
+                Map.IsInFort = true;
             }
 
             if (map.IsSparkle(player.Y, player.X))
             {
-                player.Weapons[3].Durability++;
+                player.Weapons[3].Repair(1);
 
                 map.RemoveSparkle(newY, newX);
-                Map.sparkleCollected = true;
+                Map.SparkleCollected = true;
             }
         }
         static void MoveEnemies()
@@ -109,7 +108,7 @@ namespace GameProg2_Project1FirstPlayable_NickPD
                     newY--;
                 }
 
-                // then horizontally, it can do both in one turn
+                // then horizontally, it can do both in one turn // FIX SHOULD BE A METHOD BY ENEMY AND ALSO 1 MOVEMENT PER TURN
                 if (enemy.X < player.X)
                 {
                     newX++;
@@ -143,9 +142,6 @@ namespace GameProg2_Project1FirstPlayable_NickPD
         }
         static int? GetEnemyIndexAtPosition(int playerY, int playerX) // I have to use int? because sometimes there wont be an enemy there
         {
-            int mapY = playerY - 1; // These will continue to represent border compensation
-            int mapX = playerX - 1;
-
             // check all enemies
             for (int i = 0; i < enemies.Length; i++)     
             {
@@ -176,11 +172,11 @@ namespace GameProg2_Project1FirstPlayable_NickPD
                 return;
             }
 
-            Console.SetCursorPosition(0, map.rows + 2);
+            Console.SetCursorPosition(0, map.Rows + 2);
             Console.Write(new string(' ', Console.WindowWidth));
 
             Console.WriteLine($"A {enemy.Type} attacks!");
-            Console.WriteLine($"Player Health: {player.health.Current} | {enemy.Type} Health: {enemy.Health}\n");
+            Console.WriteLine($"Player Health: {player.Health.Current} | {enemy.Type} Health: {enemy.Health}\n");
 
             for (int i = 0; i < player.Weapons.Count; i++)
             {
@@ -290,7 +286,7 @@ namespace GameProg2_Project1FirstPlayable_NickPD
                     enemyDamage -= 1; // reduce by 1
                 }
                 Console.WriteLine($"The {enemy.Type} counterattacks and deals {enemyDamage}!");
-                player.health.TakeDamage(enemyDamage);
+                player.Health.TakeDamage(enemyDamage);
             }
 
             enemies[enemyIndex].Health = enemy.Health;
@@ -304,7 +300,7 @@ namespace GameProg2_Project1FirstPlayable_NickPD
         }
         static void CheckForDeaths() // I think this belong in main because it affects the game not player?
         {
-            if (player.health.Current <= 0)
+            if (player.Health.Current <= 0)
             {
                 Console.WriteLine($"Game Over.");
                 Console.WriteLine("Press any key to close the game.");

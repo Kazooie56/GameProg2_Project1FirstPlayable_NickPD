@@ -21,12 +21,18 @@ namespace GameProg2_Project1FirstPlayable_NickPD
         // █ = fort:        makes any friend or foe within these walls take 1 less damage
         // * = sparkles:    pick up a leftover weapon with a single use
 
-        private char[,] map;
-        public int rows => map.GetLength(0);
-        public int cols => map.GetLength(1);
+        private char[,] _map;
+        public int Rows
+        {
+            get { return _map.GetLength(0); }
+        }
+        public int Cols
+        {
+            get { return _map.GetLength(1); }
+        }
 
-        public static bool sparkleCollected = false;
-        public static bool isInFort = false;           // dumb "if inside fort" bool
+        public static bool SparkleCollected { get; set; }
+        public static bool IsInFort { get; set; }           // dumb "if inside fort" bool
 
         public Map(string path)
         {
@@ -41,14 +47,14 @@ namespace GameProg2_Project1FirstPlayable_NickPD
             int cols = lines[0].Length;                 // This is the horizontal rows
 
             // Create the 2D array
-            map = new char[rows, cols];                 // this makes the map consist of a new map where the number for each row and column makes the tuple for the 2d array. (might be outdated description from old project, fix if time)
+            _map = new char[rows, cols];                 // this makes the map consist of a new map where the number for each row and column makes the tuple for the 2d array. (might be outdated description from old project, fix if time)
 
             // Fills the rows and columns to draw the map
             for (int y = 0; y < rows; y++)
             {
                 for (int x = 0; x < cols; x++)
                 {
-                    map[y, x] = lines[y][x];
+                    _map[y, x] = lines[y][x];
                 }
             }
         }
@@ -56,21 +62,21 @@ namespace GameProg2_Project1FirstPlayable_NickPD
         {
             // Top border
             Console.Write("+");
-            for (int i = 0; i < cols; i++)
+            for (int i = 0; i < Cols; i++)
             {
                 Console.Write("-");
             }
 
             Console.WriteLine("+");
 
-                for (int y = 0; y < rows; y++)
+                for (int y = 0; y < Rows; y++)
                 {
                     // Left border
                     Console.Write("|");         
 
-                    for (int x = 0; x < cols; x++)
+                    for (int x = 0; x < Cols; x++)
                     {
-                        char tile = map[y, x];
+                        char tile = _map[y, x];
 
                         // For each tile we draw we're gonna change it's color
                         switch (tile)
@@ -102,7 +108,7 @@ namespace GameProg2_Project1FirstPlayable_NickPD
 
             // Bottom border
             Console.Write("+");                                 
-            for (int i = 0; i < cols; i++)
+            for (int i = 0; i < Cols; i++)
             Console.Write("-");
             Console.WriteLine("+");
 
@@ -112,9 +118,9 @@ namespace GameProg2_Project1FirstPlayable_NickPD
             Console.Write("0");
             Console.ResetColor();
 
-            int messageLine = rows + 2; // writing this here so that I don't need to make it two more times in each if statement below
+            int messageLine = Rows + 2; // writing this here so that I don't need to make it two more times in each if statement below
 
-            if (sparkleCollected == true)
+            if (SparkleCollected == true)
             {
                 Console.SetCursorPosition(0, messageLine);
                 Console.Write("Your Silver Sword has gained a little more endurance!");
@@ -124,13 +130,13 @@ namespace GameProg2_Project1FirstPlayable_NickPD
                 Console.SetCursorPosition(0, messageLine);
                 Console.Write("                                                     ");
 
-                sparkleCollected = false;
+                SparkleCollected = false;
             }
 
-            if (isInFort == true)
+            if (IsInFort == true)
             {
                 Console.SetCursorPosition(0, messageLine);
-                Console.Write("Warriors take 1 less damage while inside the fort!");
+                Console.Write("Warriors take 1 less damage while inside the fort!");    // FIX this message never goes away, Also it's implementation sucks
             }
             else
             {
@@ -163,13 +169,13 @@ namespace GameProg2_Project1FirstPlayable_NickPD
                 return false;
             }
 
-            char tile = map[mapY, mapX];
+            char tile = _map[mapY, mapX];
             return tile == '▓' || tile == '*' || tile == '█';
         }
         private bool InBounds(int y, int x) // might be irrelevant
         {
-            return y >= 0 && y < rows &&
-                   x >= 0 && x < cols;
+            return y >= 0 && y < Rows &&
+                   x >= 0 && x < Cols;
         }
 
         public bool IsSparkle(int y, int x)
@@ -177,7 +183,7 @@ namespace GameProg2_Project1FirstPlayable_NickPD
             int mapY = y - 1;
             int mapX = x - 1;
 
-            return map[mapY, mapX] == '*';
+            return _map[mapY, mapX] == '*';
         }
 
         public bool IsFort(int y, int x)
@@ -185,7 +191,7 @@ namespace GameProg2_Project1FirstPlayable_NickPD
             int mapY = y - 1;
             int mapX = x - 1;
 
-            return map[mapY, mapX] == '█';
+            return _map[mapY, mapX] == '█';
         }
 
         public void RemoveSparkle(int y, int x)
@@ -193,8 +199,8 @@ namespace GameProg2_Project1FirstPlayable_NickPD
             int mapY = y - 1;
             int mapX = x - 1;
 
-            if (map[mapY, mapX] == '*')
-                map[mapY, mapX] = '▓';
+            if (_map[mapY, mapX] == '*')
+                _map[mapY, mapX] = '▓';
         }
     }
 }

@@ -18,26 +18,30 @@ namespace GameProg2_Project1FirstPlayable_NickPD
         //static int steelSwordDurability = 4;
         //static int silverSwordDurability = 2;
 
-        public string Name;
-        private int[] damageRange;
-        public int Durability;
+        public string Name { get; private set; }
+        private int[] _damageRange;
+        public int Durability { get; private set; }
 
-        public int[] DamageRange => damageRange;
+        public int[] DamageRange
+        {
+            get { return _damageRange; }
+        }
 
         public Weapon(string name, int[] damageRange, int durability)
         {
             Name = name;
-            this.damageRange = damageRange;
+            _damageRange = damageRange;
             Durability = durability;
         }
 
         public int Attack(Random random) // deal damage based on the weapon random damage values
         {
             Durability--;
-            return damageRange[random.Next(damageRange.Length)];
+            int damageIndex = random.Next(_damageRange.Length);
+            return _damageRange[damageIndex];
         }
 
-        public void Repair(int amount)
+        public void Repair(int amount) //With this new method I can now increase a weapon's durability by anything.
         {
             Durability += amount;
         }
