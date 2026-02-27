@@ -123,7 +123,7 @@ namespace GameProg2_Project1FirstPlayable_NickPD
             if (SparkleCollected == true)
             {
                 Console.SetCursorPosition(0, messageLine);
-                Console.Write("Your Silver Sword has gained a little more endurance!");
+                Console.Write("Your Silver Sword has gained a little more endurance!");         // MAKE IT SO THE PLAYER PAUSES WHEN COLLECTING AN ITEM
                 Thread.Sleep(1000); // show message briefly
 
                 // Clear the message

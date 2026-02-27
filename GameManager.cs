@@ -2,19 +2,16 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
-using System.IO;
 
 namespace GameProg2_Project1FirstPlayable_NickPD
 {
-    internal class Program
+    internal class GameManager
     {
         static Map map;     // this is our map reference
-        static GameManager gameManager;
-
+        static Player player = new Player(15, 2); // 15th line down from the actual map, not including border, 2nd line to the right.
         static Enemy[] enemies =                // all our enemies with a new type "name"
-        {
+{
             new Enemy(1, 9, 16, new int[]{2,3,4,5}, "2-5", "Barbarian"),        // Barbarians are the most volatile
             new Enemy(7, 10, 16, new int[]{2,3,4,5}, "2-5", "Barbarian"),
             new Enemy(4, 11, 16, new int[]{3,4}, "3-4", "Myrmidon"),            // More consistent barbarians
@@ -27,31 +24,10 @@ namespace GameProg2_Project1FirstPlayable_NickPD
             new Enemy(10, 7, 12, new int[]{4}, "4", "Mage")
         };
 
-        static Player player = new Player(15, 2); // 15th line down from the actual map, not including border, 2nd line to the right.
-
-        static bool isInFort = false;           // dumb "if inside fort" bool // FIX WHY IS IT IN HALF THE CLASSES?
-
+        static bool isInFort = false;
         static Random random = new Random();
-
         static bool GameOver = false;
 
-        static void Main(string[] args)
-        {
-            Console.CursorVisible = false;
-
-            map = new Map("map.txt");
-
-            while (GameOver == false)
-            {
-                Console.Clear();
-                map.DrawAll(player.Y, player.X, enemies);
-
-                ConsoleKey key = Console.ReadKey(true).Key;
-
-                MovePlayer(key);
-                MoveEnemies();
-            }
-        }
         static void MovePlayer(ConsoleKey key)
         {
             var (newY, newX) = player.MovePlayer(key);
@@ -144,11 +120,11 @@ namespace GameProg2_Project1FirstPlayable_NickPD
         static int? GetEnemyIndexAtPosition(int playerY, int playerX) // I have to use int? because sometimes there wont be an enemy there
         {
             // check all enemies
-            for (int i = 0; i < enemies.Length; i++)     
+            for (int i = 0; i < enemies.Length; i++)
             {
                 // ignore dead ones
                 if (enemies[i].Health <= 0)
-                    continue; 
+                    continue;
 
                 // Compare with player coordinates, not map indices
                 if (enemies[i].Y == playerY &&
@@ -190,7 +166,7 @@ namespace GameProg2_Project1FirstPlayable_NickPD
                 }
                 else
                 {
-                    
+
                     durabilityText = weapon.Durability.ToString();
                 }
 
