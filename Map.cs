@@ -160,16 +160,12 @@ namespace GameProg2_Project1FirstPlayable_NickPD
 
         public bool IsWalkable(int y, int x)
         {
-            // This is to account for the border
-            int mapY = y - 1;
-            int mapX = x - 1;
-
-            if (!InBounds(mapY, mapX))
+            if (!InBounds(y, x))
             {
                 return false;
             }
 
-            char tile = _map[mapY, mapX];
+            char tile = _map[y, x];
             return tile == '▓' || tile == '*' || tile == '█';
         }
         private bool InBounds(int y, int x) // might be irrelevant
@@ -180,27 +176,18 @@ namespace GameProg2_Project1FirstPlayable_NickPD
 
         public bool IsSparkle(int y, int x)
         {
-            int mapY = y - 1;
-            int mapX = x - 1;
-
-            return _map[mapY, mapX] == '*';
+            return _map[y, x] == '*';
         }
 
         public bool IsFort(int y, int x)
         {
-            int mapY = y - 1;
-            int mapX = x - 1;
-
-            return _map[mapY, mapX] == '█';
+            return _map[y, x] == '█';
         }
 
         public void RemoveSparkle(int y, int x)
         {
-            int mapY = y - 1;
-            int mapX = x - 1;
-
-            if (_map[mapY, mapX] == '*')
-                _map[mapY, mapX] = '▓';
+            if (_map[y, x] == '*')
+                _map[y, x] = '▓';
         }
     }
 }

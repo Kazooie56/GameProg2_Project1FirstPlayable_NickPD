@@ -11,7 +11,7 @@ namespace GameProg2_Project1FirstPlayable_NickPD
     internal class Program
     {
         static Map map;     // this is our map reference
-        static GameManager gameManager;
+        //static GameManager gameManager;
 
         static Enemy[] enemies =                // all our enemies with a new type "name"
         {
