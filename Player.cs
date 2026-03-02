@@ -9,8 +9,8 @@ namespace GameProg2_Project1FirstPlayable_NickPD
     //player class handles the player.
     internal class Player
     {
-        public int Y { get; private set; }
         public int X { get; private set; }
+        public int Y { get; private set; }
 
         public Health Health { get; private set; }
         private List<Weapon> _weapons = new List<Weapon>();
