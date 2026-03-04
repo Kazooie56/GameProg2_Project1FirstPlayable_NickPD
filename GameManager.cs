@@ -6,34 +6,45 @@ using System.Threading.Tasks;
 
 namespace GameProg2_Project1FirstPlayable_NickPD
 {
-    internal class GameManager
+    public class GameManager
     {
-        static Map map;     // this is our map reference
-        static Player player = new Player(15, 2); // 15th line down from the actual map, not including border, 2nd line to the right.
-        static Enemy[] enemies =                // all our enemies with a new type "name"
-{
-            new Enemy(1, 9, 16, new int[]{2,3,4,5}, "2-5", "Barbarian"),        // Barbarians are the most volatile
-            new Enemy(7, 10, 16, new int[]{2,3,4,5}, "2-5", "Barbarian"),
-            new Enemy(4, 11, 16, new int[]{3,4}, "3-4", "Myrmidon"),            // More consistent barbarians
-            new Enemy(8, 2, 32, new int[]{3,4,5,6}, "3-6", "Boss Barbarian"),   // Stronger than average Barbarian with 2x health
-            new Enemy(6, 3, 16, new int[]{2,3,4,5}, "2-5", "Barbarian"),
-            new Enemy(7, 4, 16, new int[]{3,4}, "3-4", "Myrmidon"),
-            new Enemy(8, 3, 12, new int[]{4}, "4", "Mage"),                     // Higher damage than average but lowest health
-            new Enemy(9, 4, 16, new int[]{3,4}, "3-4", "Myrmidon"),
-            new Enemy(10, 3, 16, new int[]{2,3,4,5}, "2-5","Barbarian"),
-            new Enemy(10, 7, 12, new int[]{4}, "4", "Mage")
+        public Map Map;     // this is our map reference
+        public Player player = new Player(15, 2); // 15th line down from the actual map, not including border, 2nd line to the right.
+        public Enemy[] enemies =                // all our enemies with a new type "name"
+        { // btw, 1 = furthest left on map, 9 means how many blocks down
+            new Enemy(1, 9, 16, new int[]{2,3,4,5}, "2-5", "Barbarian", 'p', Enemy.MovementStrategy.Regular),               // Barbarians are the most volatile
+            new Enemy(7, 10, 16, new int[]{2,3,4,5}, "2-5", "Barbarian", 'p', Enemy.MovementStrategy.Regular),
+            new Enemy(4, 11, 16, new int[]{3,4}, "3-4", "Myrmidon", '/', Enemy.MovementStrategy.Regular),                   // More consistent barbarians
+            new Enemy(8, 2, 32, new int[]{3,4,5,6}, "3-6", "Boss Barbarian", 'P', Enemy.MovementStrategy.ShortSighted),     // Stronger than average Barbarian with 2x health
+            new Enemy(6, 3, 16, new int[]{2,3,4,5}, "2-5", "Barbarian", 'p', Enemy.MovementStrategy.Regular),
+            new Enemy(7, 4, 16, new int[]{3,4}, "3-4", "Myrmidon", '/', Enemy.MovementStrategy.Regular),
+            new Enemy(8, 3, 12, new int[]{4}, "4", "Mage", '^', Enemy.MovementStrategy.Regular),                            // Higher damage than average but lowest health
+            new Enemy(9, 4, 16, new int[]{3,4}, "3-4", "Myrmidon", '/', Enemy.MovementStrategy.Regular),
+            new Enemy(10, 3, 16, new int[]{2,3,4,5}, "2-5","Barbarian", 'p', Enemy.MovementStrategy.Regular),
+            new Enemy(10, 7, 12, new int[]{4}, "4", "Mage", '^', Enemy.MovementStrategy.Regular)
         };
 
         static bool isInFort = false;
         static Random random = new Random();
         static bool GameOver = false;
+        public GameManager(Map map)
+        {
+            Map = map;
+        }
 
-        static void MovePlayer(ConsoleKey key)
+        public void Draw()
+        {
+            Console.Clear();
+            Map.DrawAll(player.Y, player.X, enemies);
+            player.DrawPlayer();
+        }
+
+        public void MovePlayer(ConsoleKey key)
         {
             var (newY, newX) = player.MovePlayer(key);
 
             // if the place you're trying to move is within the map's boundaries, and it is either the ground, sparkle, or a fort
-            if (!map.IsWalkable(newY, newX))
+            if (!Map.IsWalkable(newY, newX))
             {
                 return;
             }
@@ -49,57 +60,37 @@ namespace GameProg2_Project1FirstPlayable_NickPD
 
             player.SetPosition(newX, newY);      // then set new position, now we can check for sparkles because we want the player to be on top of them first.
 
-            isInFort = map.IsFort(player.Y, player.X);
-            if (map.IsFort(player.Y, player.X))
+            isInFort = Map.IsFort(player.Y, player.X);
+
+            if (Map.IsFort(player.Y, player.X))
             {
                 Map.IsInFort = true;
             }
+            else
+            {
+                Map.IsInFort = false;
+            }
 
-            if (map.IsSparkle(player.Y, player.X))
+            if (Map.IsSparkle(player.Y, player.X))
             {
                 player.Weapons[3].Repair(1);
 
-                map.RemoveSparkle(newY, newX);
+                Map.RemoveSparkle(newY, newX);
                 Map.SparkleCollected = true;
             }
         }
-        static void MoveEnemies()
+        public void MoveEnemies()
         {
             for (int i = 0; i < enemies.Length; i++)
             {
                 var enemy = enemies[i];
 
-                if (enemy.Health <= 0) // skip dead guys
+                if (enemy.Health.Current <= 0) // skip dead guys
                     continue;
 
-                int newY = enemy.Y;
-                int newX = enemy.X;
+                var (newY, newX) = enemy.RegularMovePattern(player);
 
-                // try moving vertically first
-                if (enemy.Y < player.Y)
-                {
-                    newY++;
-                }
-                else if (enemy.Y > player.Y)
-                {
-                    newY--;
-                }
-
-                // then horizontally, it can do both in one turn // FIX SHOULD BE A METHOD BY ENEMY AND ALSO 1 MOVEMENT PER TURN
-                if (enemy.X < player.X)
-                {
-                    newX++;
-                }
-                else if (enemy.X > player.X)
-                {
-                    newX--;
-                }
-
-                // our future positions - 1 on both axis because of borders
-                int newMapY = newY - 1;
-                int newMapX = newX - 1;
-
-                if (map.IsWalkable(newY, newX))
+                if (Map.IsWalkable(newY, newX))
                 {
                     // Check if enemy would move onto player
                     if (newY == player.Y && newX == player.X)
@@ -111,19 +102,18 @@ namespace GameProg2_Project1FirstPlayable_NickPD
                     // Check if another enemy is there
                     if (GetEnemyIndexAtPosition(newY, newX) == null)
                     {
-                        enemy.Y = newY;
-                        enemy.X = newX;
+                        enemy.SetPosition(newX, newY);
                     }
                 }
             }
         }
-        static int? GetEnemyIndexAtPosition(int playerY, int playerX) // I have to use int? because sometimes there wont be an enemy there
+        public int? GetEnemyIndexAtPosition(int playerY, int playerX) // I have to use int? because sometimes there wont be an enemy there
         {
             // check all enemies
             for (int i = 0; i < enemies.Length; i++)
             {
                 // ignore dead ones
-                if (enemies[i].Health <= 0)
+                if (enemies[i].Health.Current <= 0)
                     continue;
 
                 // Compare with player coordinates, not map indices
@@ -136,24 +126,23 @@ namespace GameProg2_Project1FirstPlayable_NickPD
 
             return null;
         }
-        static void StartCombat(int enemyIndex)
+        public void StartCombat(int enemyIndex)
         {
-            Console.Clear();
-            map.DrawAll(player.Y, player.X, enemies);
+            Draw();
 
             CheckForDeaths();
 
             var enemy = enemies[enemyIndex];
-            if (enemies[enemyIndex].Health <= 0)
+            if (enemies[enemyIndex].Health.Current <= 0)
             {
                 return;
             }
 
-            Console.SetCursorPosition(0, map.Rows + 2);
+            Console.SetCursorPosition(0, Map.Rows + 3);
             Console.Write(new string(' ', Console.WindowWidth));
 
             Console.WriteLine($"A {enemy.Type} attacks!");
-            Console.WriteLine($"Player Health: {player.Health.Current} | {enemy.Type} Health: {enemy.Health}\n");
+            Console.WriteLine($"Player Health: {player.Health.Current} | {enemy.Type} Health: {enemy.Health.Current}\n");
 
             for (int i = 0; i < player.Weapons.Count; i++)
             {
@@ -242,16 +231,16 @@ namespace GameProg2_Project1FirstPlayable_NickPD
                 break; // valid choice made, exit loop
             }
 
-            if (map.IsFort(enemy.Y, enemy.X))
+            if (Map.IsFort(enemy.Y, enemy.X))
             {
                 playerDamage -= 1;
             }
 
-            enemy.Health -= playerDamage;
+            enemy.Health.TakeDamage(playerDamage);
 
             Console.WriteLine($"\nPlayer used {weaponName} and dealt {playerDamage} damage!");
 
-            if (enemy.Health <= 0)
+            if (enemy.Health.Current <= 0)
             {
                 Console.WriteLine($"You defeated {enemy.Type}!");
             }
@@ -266,24 +255,22 @@ namespace GameProg2_Project1FirstPlayable_NickPD
                 player.Health.TakeDamage(enemyDamage);
             }
 
-            enemies[enemyIndex].Health = enemy.Health;
-
             CheckForDeaths();
             if (!GameOver)
             {
                 Console.WriteLine("Press any key to continue...");
                 Console.ReadKey();
             }
+
         }
-        static void CheckForDeaths() // I think this belong in main because it affects the game not player?
+        public bool CheckForDeaths() // I think this belong in main because it affects the game not player?
         {
             if (player.Health.Current <= 0)
             {
-                Console.WriteLine($"Game Over.");
-                Console.WriteLine("Press any key to close the game.");
-                Console.ReadKey();
                 GameOver = true;
             }
+
+            return GameOver;
         }
     }
 }

@@ -6,9 +6,8 @@ using System.Threading.Tasks;
 
 namespace GameProg2_Project1FirstPlayable_NickPD
 {
-    internal class Health
+    public class Health
     {
-        //health system class handles health system -- via composition.
         public int Current { get; private set; }
         public int Max { get; private set; }
 

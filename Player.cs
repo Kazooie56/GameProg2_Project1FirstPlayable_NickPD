@@ -7,14 +7,9 @@ using System.Threading.Tasks;
 namespace GameProg2_Project1FirstPlayable_NickPD
 {
     //player class handles the player.
-    internal class Player
+    public class Player : Entity
     {
-        public int X { get; private set; }
-        public int Y { get; private set; }
-
-        public Health Health { get; private set; }
         private List<Weapon> _weapons = new List<Weapon>();
-
         public bool IsInFort { get; set; }          // dumb "if inside fort" bool, also I think this means it's false by default.
 
         public List<Weapon> Weapons
@@ -23,12 +18,8 @@ namespace GameProg2_Project1FirstPlayable_NickPD
         }
         private Random _random = new Random();
 
-        public Player(int startY, int startX)
+        public Player(int startY, int startX) : base(startX, startY, 40)
         {
-            Y = startY;
-            X = startX;
-            Health = new Health(40);
-
             _weapons.Add(new Weapon("Bronze Sword", new int[] { 5 }, 8));
             _weapons.Add(new Weapon("Iron Sword", new int[] { 7, 9 }, 6));
             _weapons.Add(new Weapon("Steel Sword", new int[] { 11, 13, 15 }, 4));
@@ -56,10 +47,14 @@ namespace GameProg2_Project1FirstPlayable_NickPD
             return (newY, newX);
         }
 
-        public void SetPosition(int newX, int newY)
+        
+
+        public void DrawPlayer()
         {
-            X = newX;
-            Y = newY;
+            Console.SetCursorPosition(X, Y);
+            Console.ForegroundColor = ConsoleColor.Blue;
+            Console.Write("0");
+            Console.ResetColor();
         }
 
         public void TakeDamage(int amount)

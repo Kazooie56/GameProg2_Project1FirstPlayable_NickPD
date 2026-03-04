@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace GameProg2_Project1FirstPlayable_NickPD
 {
-    internal class Map
+    public class Map
     {
         // map class handles the map.
 
@@ -112,12 +112,6 @@ namespace GameProg2_Project1FirstPlayable_NickPD
             Console.Write("-");
             Console.WriteLine("+");
 
-            // Draw player
-            Console.SetCursorPosition(playerX, playerY);
-            Console.ForegroundColor = ConsoleColor.Blue;
-            Console.Write("0");
-            Console.ResetColor();
-
             int messageLine = Rows + 2; // writing this here so that I don't need to make it two more times in each if statement below
 
             if (SparkleCollected == true)
@@ -147,12 +141,7 @@ namespace GameProg2_Project1FirstPlayable_NickPD
             // Draw enemies
             foreach (var enemy in enemies)
             {
-                if (enemy.Health <= 0)
-                    continue;
-
-                Console.SetCursorPosition(enemy.X, enemy.Y);
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.Write("X");
+                enemy.DrawEnemy();
             }
 
             Console.ResetColor();

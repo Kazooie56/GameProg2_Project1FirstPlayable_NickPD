@@ -6,42 +6,129 @@ using System.Threading.Tasks;
 
 namespace GameProg2_Project1FirstPlayable_NickPD
 {
-    internal class Enemy
+    public class Enemy : Entity
     {
-        //enemy class handles the enemy.
-        public int X { get; set; }
-        public int Y { get; set; }
-        public int Health { get; set; }
         public int[] DamageRange { get; }
         public string DamageRangeDescription { get; }
-        public string Type { get; set; } // may name them boss, barbarian etc, would be class but classes are a code thing
-        public bool _isInFort { get; set; }
+        public char Icon { get; set; }
 
-        public Enemy(int x, int y, int health, int[] damageRange, string damageRangeDescription, string type)
+        public int TurnToMove { get; set; }
+        public string Type { get; set; } // would be class but classes are a code thing
+        public bool _isInFort { get; set; }
+        public enum MovementStrategy
         {
-            X = x;
-            Y = y;
-            Health = health;
+            Regular,
+            ShortSighted,
+            Retreat
+        }
+        public MovementStrategy Movement { get; set; }
+
+        public Enemy(int x, int y, int health, int[] damageRange, string damageRangeDescription, string type, char icon, MovementStrategy movement) : base(x, y, health) // too long and ugly
+        {
             DamageRange = damageRange;
             DamageRangeDescription = damageRangeDescription;
             Type = type;
+            Icon = icon;
+            Movement = movement;
         }
 
-        //public (int newY, int newX) MoveToward(Player player) // FIX REPLACE MOVEMENT LATER
-        //{
-        //    int newY = Y;
-        //    int newX = X;
+        public void DrawEnemy()
+        {
+            if (Health.Current <= 0)
+                return;
 
-        //    if (Y < player.Y)
-        //        newY++;
-        //    else if (Y > player.Y)
-        //        newY--;
-        //    else if (X < player.X)
-        //        newX++;
-        //    else if (X > player.X)
-        //        newX--;
+            Console.SetCursorPosition(X, Y);
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.Write($"{Icon}");
+        }
 
-        //    return (newY, newX);
-        //}
+        public (int newY, int newX) DecideMove(Player player)
+        {
+            switch (Type)
+            {
+                case "Regular":
+                    return RegularMovePattern(player);
+
+                case "ShortSighted":
+                    return ShortSightedMovePattern(player);
+
+                case "Retreat":
+                    return RetreatMovePattern(player);
+
+                default:
+                    return (Y, X);
+            }
+        }
+
+        public (int newY, int newX) RegularMovePattern(Player player)
+        {
+            int newY = Y;
+            int newX = X;
+
+            int distanceY = Math.Abs(player.Y - Y); //Math.Abs means negatives and positives don't count towards the value
+            int distanceX = Math.Abs(player.X - X);
+
+            // enemies move to reach the player by traveling the furthest direction first.
+            if (distanceY > distanceX) 
+            {
+                if (Y < player.Y) newY++;
+                else if (Y > player.Y) newY--;
+            }
+            else
+            {
+                if (X < player.X) newX++;
+                else if (X > player.X) newX--;
+            }
+
+            return (newY, newX);
+        }
+
+        public (int newY, int newX) ShortSightedMovePattern(Player player)
+        {
+            int newY = Y;
+            int newX = X;
+
+            int distanceY = Math.Abs(player.Y - Y);
+            int distanceX = Math.Abs(player.X - X);
+
+            int sightDistance = distanceY + distanceX;
+
+            if (sightDistance > 2)
+                return (Y, X); // returning Y, X means no chasing.
+
+            if (distanceY > distanceX)
+            {
+                if (Y < player.Y) newY++;
+                else if (Y > player.Y) newY--;
+            }
+            else
+            {
+                if (X < player.X) newX++;
+                else if (X > player.X) newX--;
+            }
+
+            return (newY, newX);
+        }
+        public (int newY, int newX) RetreatMovePattern(Player player)
+        {
+            int newY = Y;
+            int newX = X;
+
+            int distanceY = Math.Abs(player.Y - Y);
+            int distanceX = Math.Abs(player.X - X);
+
+            if (distanceY > distanceX)
+            {
+                if (Y < player.Y) newY--; // swap the increases with negatives and vice versa to run away
+                else if (Y > player.Y) newY++;
+            }
+            else
+            {
+                if (X < player.X) newX--;
+                else if (X > player.X) newX++;
+            }
+
+            return (newY, newX);
+        }
     }
 }
