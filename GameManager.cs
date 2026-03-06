@@ -15,6 +15,7 @@ namespace GameProg2_Project1FirstPlayable_NickPD
             new Enemy(4, 16, 16, new int[]{2}, "2", "Theif", 't', Enemy.MovementStrategy.Retreat),
             new Enemy(12, 16, 16, new int[]{2,3,4,5}, "2-5", "Barbarian", 'p', Enemy.MovementStrategy.Regular),               // Barbarians are the most volatile
             new Enemy(12, 15, 16, new int[]{2,3,4,5}, "2-5", "Barbarian", 'p', Enemy.MovementStrategy.Regular),
+            new Enemy(8, 1, 16, new int[]{2,3,4,5}, "2-5", "Barbarian", 'p', Enemy.MovementStrategy.Regular),
             new Enemy(17, 14, 16, new int[]{3,4}, "3-4", "Myrmidon", '/', Enemy.MovementStrategy.Regular),                   // More consistent barbarians
             new Enemy(17, 5, 32, new int[]{3,4,5,6}, "3-6", "Boss Barbarian", 'P', Enemy.MovementStrategy.ShortSighted),     // Stronger than average Barbarian with 2x health
             new Enemy(18, 15, 16, new int[]{2,3,4,5}, "2-5", "Barbarian", 'p', Enemy.MovementStrategy.Regular),
