@@ -20,8 +20,9 @@ namespace GameProg2_Project1FirstPlayable_NickPD
         // ░ = walls:       also not walkable
         // █ = fort:        makes any friend or foe within these walls take 1 less damage
         // * = sparkles:    pick up a leftover weapon with a single use
+        // + = hp potion:   single use heal for 5 health.
 
-        private char[,] _map;
+        public char[,] _map;
         public int Rows
         {
             get { return _map.GetLength(0); }
@@ -30,15 +31,16 @@ namespace GameProg2_Project1FirstPlayable_NickPD
         {
             get { return _map.GetLength(1); }
         }
-
         public static bool SparkleCollected { get; set; }
+        public static bool HealthPotionCollected { get; set; }
         public static bool IsInFort { get; set; }           // dumb "if inside fort" bool
-
+        public bool Event1Done = false;
+        public bool Event2Done= false;
+        public bool Event3Done = false;
         public Map(string path)
         {
             MakeMap(path);
         }
-
         private void MakeMap(string path)
         {
             string[] lines = File.ReadAllLines(path);   // turns each line from the map file we have in our project into a string array. we call it lines.
@@ -58,7 +60,7 @@ namespace GameProg2_Project1FirstPlayable_NickPD
                 }
             }
         }
-        public void DrawAll(int playerY, int playerX, Enemy[] enemies)     // draws map, player, and enemies
+        public void DrawMap()
         {
             // Top border
             Console.Write("+");
@@ -69,76 +71,54 @@ namespace GameProg2_Project1FirstPlayable_NickPD
 
             Console.WriteLine("+");
 
-                for (int y = 0; y < Rows; y++)
+            for (int y = 0; y < Rows; y++)
+            {
+                // Left border
+                Console.Write("|");
+
+                for (int x = 0; x < Cols; x++)
                 {
-                    // Left border
-                    Console.Write("|");         
+                    char tile = _map[y, x];
 
-                    for (int x = 0; x < Cols; x++)
+                    // For each tile we draw we're gonna change it's color
+                    switch (tile)
                     {
-                        char tile = _map[y, x];
-
-                        // For each tile we draw we're gonna change it's color
-                        switch (tile)
-                        {
-                            case '▓':   // ground
-                            case '*':   // collectable, also doesn't need a different foreground color because it's shared.
-                                Console.ForegroundColor = ConsoleColor.Yellow;
-                                break;
-                            case '▒':   // water
-                                Console.ForegroundColor = ConsoleColor.Blue;
-                                break;
-                            case '░':   // walls
-                                Console.ForegroundColor = ConsoleColor.Red;
-                                break;
-                            case '█':   // fort
-                                Console.ForegroundColor = ConsoleColor.DarkGreen;
-                                break;
-                            default:
-                                Console.ResetColor();
-                                break;
-                        }
-                        // draw tile and reset color for each tile
-                        Console.Write(tile);                    
-                        Console.ResetColor();
+                        case '▓':   // ground
+                        case '#':   // ground but bones if you believe
+                        case '+':   // hp potion
+                        case '?':   // question
+                        case '*':   // collectable, also doesn't need a different foreground color because it's shared.
+                            Console.ForegroundColor = ConsoleColor.Gray;
+                            break;
+                        case '▒':   // water
+                            Console.ForegroundColor = ConsoleColor.DarkGray;
+                            break;
+                        case '░':   // walls
+                            Console.ForegroundColor = ConsoleColor.DarkYellow;
+                            break;
+                        case '█':   // fort
+                            Console.ForegroundColor = ConsoleColor.DarkGreen;
+                            break;
+                        default:
+                            Console.ResetColor();
+                            break;
                     }
-                    // Right border
-                    Console.WriteLine("|");                     
+                    // draw tile and reset color for each tile
+                    Console.Write(tile);
+                    Console.ResetColor();
                 }
+                // Right border
+                Console.WriteLine("|");
+            }
 
             // Bottom border
-            Console.Write("+");                                 
+            Console.Write("+");
             for (int i = 0; i < Cols; i++)
-            Console.Write("-");
+                Console.Write("-");
             Console.WriteLine("+");
-
-            int messageLine = Rows + 2; // writing this here so that I don't need to make it two more times in each if statement below
-
-            if (SparkleCollected == true)
-            {
-                Console.SetCursorPosition(0, messageLine);
-                Console.Write("Your Silver Sword has gained a little more endurance!");         // MAKE IT SO THE PLAYER PAUSES WHEN COLLECTING AN ITEM
-                Thread.Sleep(1000); // show message briefly
-
-                // Clear the message
-                Console.SetCursorPosition(0, messageLine);
-                Console.Write("                                                     ");
-
-                SparkleCollected = false;
-            }
-
-            if (IsInFort == true)
-            {
-                Console.SetCursorPosition(0, messageLine);
-                Console.Write("Warriors take 1 less damage while inside the fort!");    // FIX this message never goes away, Also it's implementation sucks
-            }
-            else
-            {
-                Console.SetCursorPosition(0, messageLine);
-                Console.Write("                                                     ");
-            }
-
-            // Draw enemies
+        }
+        public void DrawEnemies(Enemy[] enemies) // draws enemies
+        {
             foreach (var enemy in enemies)
             {
                 enemy.DrawEnemy();
@@ -146,7 +126,80 @@ namespace GameProg2_Project1FirstPlayable_NickPD
 
             Console.ResetColor();
         }
+        // draws map pop ups
+        public void DrawPopUp(Player player, Enemy lastEnemy = null)     
+        {
+            int messageLine = Rows + 2; // +2 means it's just underneath the border's bottom.
 
+            Console.SetCursorPosition(0, messageLine);
+            Console.ForegroundColor = ConsoleColor.Blue;
+            Console.Write($"Player Health: {player.Health.Current}");
+            Console.ResetColor();
+
+            if (lastEnemy != null)
+            {
+                Console.ResetColor();
+                Console.Write($" | ");
+                Console.ForegroundColor = ConsoleColor.Red;
+                if (lastEnemy.Health.Current <= 0)
+                {
+                    Console.Write($"{lastEnemy.Type} Health: Defeated.");
+                }
+                else
+                {
+                    Console.WriteLine($"{lastEnemy.Type} Health: {lastEnemy.Health.Current} Power: {lastEnemy.DamageRangeDescription}");
+                }
+                Console.ResetColor();
+            }
+            else
+            {
+                // Leave enemy portion blank if no enemy fought
+                Console.WriteLine("                                     ");
+            }
+
+            messageLine++;
+
+            if (SparkleCollected == true)
+            {
+                Console.SetCursorPosition(0, messageLine);
+                Console.WriteLine("Your Silver Sword has gained a little more endurance!");
+                Console.Write("Press any key to continue.");
+                Console.ReadKey(true);
+
+                // Clear the message
+                Console.SetCursorPosition(0, messageLine);
+                Console.WriteLine(new string(' ', Console.WindowWidth));
+                Console.Write(new string(' ', Console.WindowWidth));
+
+                SparkleCollected = false;
+            }
+
+            if (HealthPotionCollected == true)
+            {
+                Console.SetCursorPosition(0, messageLine);
+                Console.WriteLine("Your character has recovered some HP!");
+                Console.Write("Press any key to continue.");
+                Console.ReadKey(true);
+
+                // Clear the message
+                Console.SetCursorPosition(0, messageLine);
+                Console.WriteLine(new string(' ', Console.WindowWidth));
+                Console.Write(new string(' ', Console.WindowWidth));
+
+                HealthPotionCollected = false;
+            }
+
+            if (IsInFort == true)
+            {
+                Console.SetCursorPosition(0, messageLine);
+                Console.Write("Warriors take 1 less damage while inside the fort!");    // FIX this message now goes away, but it's implementation still sucks
+            }
+            else
+            {
+                Console.SetCursorPosition(0, messageLine);
+                Console.Write(new string(' ', Console.WindowWidth));
+            }
+        }
         public bool IsWalkable(int y, int x)
         {
             // This is to account for the border
@@ -159,14 +212,13 @@ namespace GameProg2_Project1FirstPlayable_NickPD
             }
 
             char tile = _map[mapY, mapX];
-            return tile == '▓' || tile == '*' || tile == '█';
+            return tile == '▓' || tile == '*' || tile == '+' || tile == '█' || tile == '#' || tile == '?';
         }
         private bool InBounds(int y, int x) // might be irrelevant
         {
             return y >= 0 && y < Rows &&
                    x >= 0 && x < Cols;
         }
-
         public bool IsSparkle(int y, int x)
         {
             int mapY = y - 1;
@@ -174,15 +226,13 @@ namespace GameProg2_Project1FirstPlayable_NickPD
 
             return _map[mapY, mapX] == '*';
         }
-
-        public bool IsFort(int y, int x)
+        public bool IsHealthPotion(int y, int x)
         {
             int mapY = y - 1;
             int mapX = x - 1;
 
-            return _map[mapY, mapX] == '█';
+            return _map[mapY, mapX] == '+';
         }
-
         public void RemoveSparkle(int y, int x)
         {
             int mapY = y - 1;
@@ -191,5 +241,23 @@ namespace GameProg2_Project1FirstPlayable_NickPD
             if (_map[mapY, mapX] == '*')
                 _map[mapY, mapX] = '▓';
         }
+        public void RemoveHealthPotion(int y, int x)
+        {
+            int mapY = y - 1;
+            int mapX = x - 1;
+
+            if (_map[mapY, mapX] == '+')
+                _map[mapY, mapX] = '▓';
+        }
+        public bool IsFort(int y, int x)
+        {
+            // every space on our map adjusting for borders
+            int mapY = y - 1;
+            int mapX = x - 1;
+
+            // will be a fort if it has this space.
+            return _map[mapY, mapX] == '█';
+        }
+
     }
 }

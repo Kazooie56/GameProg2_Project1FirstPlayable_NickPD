@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace GameProg2_Project1FirstPlayable_NickPD
 {
-    public class Entity
+    public abstract class Entity
     {
         public int X { get; private set; }
         public int Y { get; private set; }

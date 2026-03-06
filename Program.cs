@@ -10,7 +10,7 @@ namespace GameProg2_Project1FirstPlayable_NickPD
 {
     internal class Program
     {
-        static Map map;     // this is our map reference. MAKE IT FEEL MORE LIKE YOU NEED TO PROGRESS FROM POINT A, TO B, TO C
+        static Map map;     // this is our map reference.
         static GameManager gameManager;
         static bool GameOver = false;
 

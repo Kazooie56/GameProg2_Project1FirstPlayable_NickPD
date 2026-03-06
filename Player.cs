@@ -10,8 +10,6 @@ namespace GameProg2_Project1FirstPlayable_NickPD
     public class Player : Entity
     {
         private List<Weapon> _weapons = new List<Weapon>();
-        public bool IsInFort { get; set; }          // dumb "if inside fort" bool, also I think this means it's false by default.
-
         public List<Weapon> Weapons
         {
             get { return _weapons; }
@@ -25,12 +23,6 @@ namespace GameProg2_Project1FirstPlayable_NickPD
             _weapons.Add(new Weapon("Steel Sword", new int[] { 11, 13, 15 }, 4));
             _weapons.Add(new Weapon("Silver Sword", new int[] { 15, 17, 19, 23 }, 2));
         }
-
-        public List<Weapon> GetWeapons()
-        {
-            return _weapons;
-        }
-
         public (int newY, int newX) MovePlayer(ConsoleKey key)
         {
             int newY = Y;
@@ -47,8 +39,6 @@ namespace GameProg2_Project1FirstPlayable_NickPD
             return (newY, newX);
         }
 
-        
-
         public void DrawPlayer()
         {
             Console.SetCursorPosition(X, Y);
@@ -56,29 +46,5 @@ namespace GameProg2_Project1FirstPlayable_NickPD
             Console.Write("0");
             Console.ResetColor();
         }
-
-        public void TakeDamage(int amount)
-        {
-            Health.TakeDamage(amount);
-        }
-
-        public bool IsDead()
-        {
-            return Health.Dead();
-        }
-
-        public int GetHealth()
-        {
-            return Health.Current;
-        }
-
-        public int Attack(int weaponIndex)
-        {
-            if (weaponIndex < 0 || weaponIndex >= _weapons.Count)
-                return 0; // error
-
-            return _weapons[weaponIndex].Attack(_random); // not error
-        }
-        // INCLUDE ABSTRACT CLASSES TO FINISH THE OTHER ENEMY TYPES IN THE GAME // FIX
     }
 }

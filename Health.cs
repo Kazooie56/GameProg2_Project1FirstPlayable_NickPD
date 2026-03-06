@@ -27,9 +27,12 @@ namespace GameProg2_Project1FirstPlayable_NickPD
                 Current = 0;
         }
 
-        public bool Dead()
+        public void Heal(int amount)
         {
-            return Current <= 0;
+            Current += amount;
+
+            if (Current > Max)
+                Current = Max;
         }
     }
 }

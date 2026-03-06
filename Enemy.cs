@@ -11,10 +11,9 @@ namespace GameProg2_Project1FirstPlayable_NickPD
         public int[] DamageRange { get; }
         public string DamageRangeDescription { get; }
         public char Icon { get; set; }
-
         public int TurnToMove { get; set; }
         public string Type { get; set; } // would be class but classes are a code thing
-        public bool _isInFort { get; set; }
+
         public enum MovementStrategy
         {
             Regular,
@@ -22,7 +21,6 @@ namespace GameProg2_Project1FirstPlayable_NickPD
             Retreat
         }
         public MovementStrategy Movement { get; set; }
-
         public Enemy(int x, int y, int health, int[] damageRange, string damageRangeDescription, string type, char icon, MovementStrategy movement) : base(x, y, health) // too long and ugly
         {
             DamageRange = damageRange;
@@ -31,7 +29,6 @@ namespace GameProg2_Project1FirstPlayable_NickPD
             Icon = icon;
             Movement = movement;
         }
-
         public void DrawEnemy()
         {
             if (Health.Current <= 0)
@@ -40,26 +37,25 @@ namespace GameProg2_Project1FirstPlayable_NickPD
             Console.SetCursorPosition(X, Y);
             Console.ForegroundColor = ConsoleColor.Red;
             Console.Write($"{Icon}");
+            Console.ResetColor();
         }
-
         public (int newY, int newX) DecideMove(Player player)
         {
-            switch (Type)
+            switch (Movement)
             {
-                case "Regular":
+                case MovementStrategy.Regular:
                     return RegularMovePattern(player);
 
-                case "ShortSighted":
+                case MovementStrategy.ShortSighted:
                     return ShortSightedMovePattern(player);
 
-                case "Retreat":
+                case MovementStrategy.Retreat:
                     return RetreatMovePattern(player);
 
                 default:
                     return (Y, X);
             }
         }
-
         public (int newY, int newX) RegularMovePattern(Player player)
         {
             int newY = Y;
@@ -82,7 +78,6 @@ namespace GameProg2_Project1FirstPlayable_NickPD
 
             return (newY, newX);
         }
-
         public (int newY, int newX) ShortSightedMovePattern(Player player)
         {
             int newY = Y;
@@ -93,7 +88,7 @@ namespace GameProg2_Project1FirstPlayable_NickPD
 
             int sightDistance = distanceY + distanceX;
 
-            if (sightDistance > 2)
+            if (sightDistance > 1)
                 return (Y, X); // returning Y, X means no chasing.
 
             if (distanceY > distanceX)
