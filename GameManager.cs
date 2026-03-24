@@ -6,55 +6,69 @@ using System.Threading.Tasks;
 
 namespace GameProg2_Project1FirstPlayable_NickPD
 {
+    // Future to do list:
+    // find a way to add weapons instead of hardcoding it.
+    // have the weapon choices not be repeated code
+    // 
     public class GameManager
     {
-        public Map Map;     // this is our map reference
-        public Player player = new Player(16, 2); // 15th line down from the actual map, not including border, 2nd line to the right.
-        public Enemy[] enemies =                // all our enemies with a new type "name"
-        { // btw, 1 = furthest left on map, 9 means how many blocks down
-            new Enemy(4, 16, 16, new int[]{2}, "2", "Theif", 't', Enemy.MovementStrategy.Retreat),
-            new Enemy(12, 16, 16, new int[]{2,3,4,5}, "2-5", "Barbarian", 'p', Enemy.MovementStrategy.Regular),               // Barbarians are the most volatile
-            new Enemy(12, 15, 16, new int[]{2,3,4,5}, "2-5", "Barbarian", 'p', Enemy.MovementStrategy.Regular),
-            new Enemy(8, 1, 16, new int[]{2,3,4,5}, "2-5", "Barbarian", 'p', Enemy.MovementStrategy.Regular),
-            new Enemy(17, 14, 16, new int[]{3,4}, "3-4", "Myrmidon", '/', Enemy.MovementStrategy.Regular),                   // More consistent barbarians
-            new Enemy(17, 5, 32, new int[]{3,4,5,6}, "3-6", "Boss Barbarian", 'P', Enemy.MovementStrategy.ShortSighted),     // Stronger than average Barbarian with 2x health
-            new Enemy(18, 15, 16, new int[]{2,3,4,5}, "2-5", "Barbarian", 'p', Enemy.MovementStrategy.Regular),
-            new Enemy(17, 16, 16, new int[]{3,4}, "3-4", "Myrmidon", '/', Enemy.MovementStrategy.Regular),
-            new Enemy(17, 15, 12, new int[]{4}, "4", "Mage", '^', Enemy.MovementStrategy.Regular),                            // Higher damage than average but lowest health
-            new Enemy(14, 5, 16, new int[]{3,4}, "3-4", "Myrmidon", '/', Enemy.MovementStrategy.Regular),
-            new Enemy(14, 6, 16, new int[]{2,3,4,5}, "2-5","Barbarian", 'p', Enemy.MovementStrategy.Regular),
-            new Enemy(20, 6, 12, new int[]{4}, "4", "Mage", '^', Enemy.MovementStrategy.Regular)
-        };
+        public Map Map;
+        public Player player;
+        public EnemyManager enemyManager;
+        public ItemManager ItemManager;
 
         static bool isInFort = false;
         static Random random = new Random();
         public Enemy LastEnemyFought = null;
+        public string LastMessage { get; set; }
         static bool GameOver = false;
-        public GameManager(Map map)
+        public GameManager(Map map, ItemManager itemManager)
         {
             Map = map;
+            ItemManager = itemManager;
         }
+        public void Init()
+        {
+            Map = new Map("map.txt", ItemManager);
+            player = new Player(16, 2, "Player", new Health(40)); // 15th line down from the actual map, not including border, 2nd line to the right.
+            enemyManager = new EnemyManager();
+            LastEnemyFought = null;
+            GameOver = false;
+        }
+        public void Update(ConsoleKey? input = null)
+        {
+            if (GameOver) return;
 
+            if (input.HasValue)
+                MovePlayer(input.Value);
+
+            MoveEnemies();
+
+            CheckForDeaths();
+        }
         public void Draw()
         {
             Console.Clear();
             Map.DrawMap();
-            Map.DrawEnemies(enemies);
+            Map.DrawEnemies(enemyManager.enemies);
             player.DrawPlayer();
-            Map.DrawPopUp(player, LastEnemyFought);
+            Map.DrawPopUp(player, this, LastEnemyFought);
+
+            Console.CursorVisible = false;
         }
+        // ADD A DEBUG METHOD TO MOVE PLAYERS TO SPECIFIC POINTS ON THE MAP
         public int? GetEnemyIndexAtPosition(int playerY, int playerX)
         {
             // check all enemies
-            for (int i = 0; i < enemies.Length; i++)
+            for (int i = 0; i < enemyManager.enemies.Length; i++)
             {
                 // ignore dead ones
-                if (enemies[i].Health.Current <= 0)
+                if (enemyManager.enemies[i].Health.Current <= 0)
                     continue;
 
                 // Compare with player coordinates,
-                if (enemies[i].Y == playerY &&
-                    enemies[i].X == playerX)
+                if (enemyManager.enemies[i].Y == playerY &&
+                    enemyManager.enemies[i].X == playerX)
                 {
                     return i;
                 }
@@ -62,7 +76,6 @@ namespace GameProg2_Project1FirstPlayable_NickPD
 
             return null;
         }
-
         public void MovePlayer(ConsoleKey key)
         {
             var (newY, newX) = player.MovePlayer(key);
@@ -82,74 +95,61 @@ namespace GameProg2_Project1FirstPlayable_NickPD
                 return;
             }
 
-            if (!QuestionEvents(newX, newY))
+            Item item = Map.GetItemAt(newY, newX);
+
+            if (item != null)
             {
+                item.OnCollect(player, this);
+                if (item.RemoveOnCollect)
+                {
+                    Map.RemoveItem(item);
+                }
                 return;
             }
 
-            if (Map.IsSparkle(newY, newX))
-            {
-                Map.SparkleCollected = true;
-                player.Weapons[3].Repair(1);
-                Map.RemoveSparkle(newY, newX);
-
-                return;
-            }
-
-            if (Map.IsHealthPotion(newY, newX))
-            {
-                Map.HealthPotionCollected = true;
-                player.Health.Heal(5);
-                Map.RemoveHealthPotion(newY, newX);
-
-                return;
-            }
-
-            player.SetPosition(newX, newY);      // then set new position, now we can check for sparkles because we want the player to be on top of them first.
+            player.SetPosition(newX, newY);      // then set new position, if we don't want to adjust the position
 
             Map.IsInFort = Map.IsFort(player.Y, player.X); // this is the one that sends the message to console AND reduces damage later down the code. Definitely shouldn't be together.
         }
         public void MoveEnemies()
         {
-            if (GameOver) return;
+            if (GameOver == true) return;
 
-            for (int i = 0; i < enemies.Length; i++)
+            for (int i = 0; i < enemyManager.enemies.Length; i++)
             {
-                var enemy = enemies[i];
+                var enemy = enemyManager.enemies[i];
 
-                if (enemy.Health.Current <= 0) // skip dead guys
+                if (!enemy.IsAlive()) // skip dead guys
                     continue;
 
-                var (newY, newX) = enemy.DecideMove(player);
+                var (newY, newX) = enemy.Move(player);
 
-                if (Map.IsWalkable(newY, newX))
+                // Check if enemy would move onto player
+                if (newY == player.Y && newX == player.X)
                 {
-                    // Check if enemy would move onto player
-                    if (newY == player.Y && newX == player.X)
-                    {
-                        StartCombat(i);
-                        continue; // don't move enemy onto player
-                    }
+                    StartCombat(i);
+                    continue; // don't move enemy onto player
+                }
 
-                    // Check if another enemy is there
-                    if (GetEnemyIndexAtPosition(newY, newX) == null)
-                    {
-                        enemy.SetPosition(newX, newY);
-                    }
+                // Check if another enemy is there
+                if (Map.IsWalkable(newY, newX) &&
+                    GetEnemyIndexAtPosition(newY, newX) == null)
+                {
+                    enemy.SetPosition(newX, newY);
                 }
             }
         }
         public void StartCombat(int enemyIndex)
         {
-            if (GameOver || player.Health.Current <= 0)
+            if (GameOver || !player.IsAlive())
                 return;
 
             Draw();
 
             CheckForDeaths();
 
-            var enemy = enemies[enemyIndex];
-            if (enemies[enemyIndex].Health.Current <= 0)
+            var enemy = enemyManager.enemies[enemyIndex];
+            if (!enemyManager.enemies[enemyIndex].IsAlive())
             {
                 return;
             }
@@ -171,7 +171,6 @@ namespace GameProg2_Project1FirstPlayable_NickPD
                 }
                 else
                 {
-
                     durabilityText = weapon.Durability.ToString();
                 }
 
@@ -256,7 +255,7 @@ namespace GameProg2_Project1FirstPlayable_NickPD
 
             Console.WriteLine($"\nPlayer used {weaponName} and dealt {playerDamage} damage!");
 
-            if (enemy.Health.Current <= 0)
+            if (!enemy.IsAlive())
             {
                 Console.WriteLine($"You defeated {enemy.Type}!");
             }
@@ -278,155 +277,12 @@ namespace GameProg2_Project1FirstPlayable_NickPD
                 Console.WriteLine("Press any key to continue...");
                 Console.ReadKey();
             }
-
         }   
-        private bool QuestionEvents(int x, int y)
-        {
 
-            int mapY = y - 1;
-            int mapX = x - 1;
-
-            if (Map._map[y, x] == '?') // only run if the tile is still a ? also why did I make this backwards
-
-            // Event 1
-            if (!Map.Event1Done && x == 8 && y == 4)
-            {
-                Console.WriteLine("The spirits are asking for just 5 points of your health for their assistance. Do you accept?");
-                Console.WriteLine("Press Y to accept, any other key to decline");
-                var input = Console.ReadKey(true).Key;
-
-                if (input == ConsoleKey.Y)
-                {
-                    player.Health.TakeDamage(5);
-                    CheckForDeaths();
-
-                    if (player.Health.Current >= 5)
-                    {
-                        Map._map[3, 7] = '#'; // the question mark
-                        Map._map[2, 7] = '#';
-                        Map._map[1, 7] = '#';
-                        Console.WriteLine("A pile of bones rise from the pits to reveal a new path!");
-                        Console.ReadKey(true);
-                    }
-
-                    Map.Event1Done = true;  // mark as done
-                    return false;
-                }
-                else
-                {
-                    Console.WriteLine("You step back and decide not to sacrifice health.");
-                    Console.ReadKey(true);
-                    return false;
-                    }
-                }
-
-            // Event 1
-            if (!Map.Event1Done && x == 8 && y == 4)
-            {
-                Console.WriteLine("The spirits are asking for just 5 points of your health for their assistance. Do you accept?");
-                Console.WriteLine("Press Y to accept, any other key to decline");
-                var input = Console.ReadKey(true).Key;
-
-                if (input == ConsoleKey.Y)
-                {
-                    player.Health.TakeDamage(5);
-                    CheckForDeaths();
-
-                    if (player.Health.Current >= 5)
-                    {
-                        Map._map[3, 7] = '#'; // the question mark
-                        Map._map[2, 7] = '#';
-                        Map._map[1, 7] = '#';
-                        Console.WriteLine("A pile of bones rise from the pits to reveal a new path!");
-                        Console.ReadKey(true);
-                    }
-
-                    Map.Event1Done = true;  // mark as done
-                    return false;
-                }
-                else
-                {
-                    Console.WriteLine("You step back and decide not to sacrifice health.");
-                    Console.ReadKey(true);
-                    return false;
-                }
-            }
-
-            // Event 2
-            if (!Map.Event2Done && x == 9 && y == 5)
-            {
-                Console.WriteLine("The spirits are asking for just 5 points of your health for their assistance. Do you accept?");
-                Console.WriteLine("Press Y to accept, any other key to decline");
-                var input = Console.ReadKey(true).Key;
-
-                if (input == ConsoleKey.Y)
-                {
-                    player.Health.TakeDamage(5);
-                    CheckForDeaths();
-
-                    if (player.Health.Current >= 5)
-                    {
-                        Map._map[4, 8] = '#'; // the question mark
-                        Map._map[4, 9] = '#';
-                        Map._map[4, 10] = '#';
-                        Map._map[4, 11] = '#';
-                        Console.WriteLine("A pile of bones rise from the pits to reveal a new path!");
-                        Console.ReadKey(true);
-                    }
-
-                    Map.Event2Done = true;  // mark as done
-                    return false;
-                }
-                else
-                {
-                    Console.WriteLine("You step back and decide not to sacrifice health.");
-                    Console.ReadKey(true);
-                    return false;
-                }
-            }
-
-            // Event 3
-            if (!Map.Event3Done && x == 11 && y == 10)
-            {
-                Console.WriteLine("The spirits are asking for just 5 points of your health for their assistance. Do you accept?");
-                Console.WriteLine("Press Y to accept, any other key to decline");
-                var input = Console.ReadKey(true).Key;
-
-                if (input == ConsoleKey.Y)
-                {
-                    player.Health.TakeDamage(5);
-                    CheckForDeaths();
-
-                    if (player.Health.Current >= 5)
-                    {
-                        Map._map[9, 10] = '#'; // the question mark
-                        Map._map[9, 11] = '#';
-                        Map._map[9, 12] = '#';
-                        Map._map[9, 13] = '#';
-                        Map._map[9, 14] = '#';
-                        Map._map[9, 15] = '#';
-                        Map._map[9, 16] = '#';
-                        Console.WriteLine("A pile of bones rise from the pits to reveal a new path!");
-                        Console.ReadKey(true);
-                    }
-
-                    Map.Event3Done = true;  // mark as done
-                    return false;
-                }
-                else
-                {
-                    Console.WriteLine("You step back and decide not to sacrifice health.");
-                    Console.ReadKey(true);
-                    return false;
-                }
-            }
-
-            return true; // normal tiles allow movement
-        }
         public bool CheckForDeaths()
         {
-            if (player.Health.Current <= 0)
-            {
+            if (!player.IsAlive())
+            { 
                 GameOver = true;
             }
 

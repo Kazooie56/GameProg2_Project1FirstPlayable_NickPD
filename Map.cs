@@ -23,6 +23,7 @@ namespace GameProg2_Project1FirstPlayable_NickPD
         // + = hp potion:   single use heal for 5 health.
 
         public char[,] _map;
+        private List<Item> _items = new List<Item>();
         public int Rows
         {
             get { return _map.GetLength(0); }
@@ -31,25 +32,23 @@ namespace GameProg2_Project1FirstPlayable_NickPD
         {
             get { return _map.GetLength(1); }
         }
-        public static bool SparkleCollected { get; set; }
-        public static bool HealthPotionCollected { get; set; }
         public static bool IsInFort { get; set; }           // dumb "if inside fort" bool
-        public bool Event1Done = false;
-        public bool Event2Done= false;
-        public bool Event3Done = false;
-        public Map(string path)
+        public Map(string path, ItemManager itemManager)
         {
-            MakeMap(path);
+            MakeMap(path, itemManager);
         }
-        private void MakeMap(string path)
+        private void MakeMap(string path, ItemManager itemManager)
         {
             string[] lines = File.ReadAllLines(path);   // turns each line from the map file we have in our project into a string array. we call it lines.
-
+            
             int rows = lines.Length;                    // This is the vertical rows
             int cols = lines[0].Length;                 // This is the horizontal rows
 
             // Create the 2D array
-            _map = new char[rows, cols];                 // this makes the map consist of a new map where the number for each row and column makes the tuple for the 2d array. (might be outdated description from old project, fix if time)
+            // this makes the map consist of a new map where the number for each row and column
+            // makes the tuple for the 2d array. (might be outdated description from old project,
+            // fix description if time)
+            _map = new char[rows, cols];           
 
             // Fills the rows and columns to draw the map
             for (int y = 0; y < rows; y++)
@@ -59,7 +58,13 @@ namespace GameProg2_Project1FirstPlayable_NickPD
                     _map[y, x] = lines[y][x];
                 }
             }
+
+            foreach (var item in itemManager.AllItems)
+            {
+                AddItem(item);
+            }
         }
+        // REDRAW ONLY THE STUFF THAT GETS UPDATED
         public void DrawMap()
         {
             // Top border
@@ -127,7 +132,7 @@ namespace GameProg2_Project1FirstPlayable_NickPD
             Console.ResetColor();
         }
         // draws map pop ups
-        public void DrawPopUp(Player player, Enemy lastEnemy = null)     
+        public void DrawPopUp(Player player, GameManager gameManager, Enemy lastEnemy = null)
         {
             int messageLine = Rows + 2; // +2 means it's just underneath the border's bottom.
 
@@ -141,7 +146,7 @@ namespace GameProg2_Project1FirstPlayable_NickPD
                 Console.ResetColor();
                 Console.Write($" | ");
                 Console.ForegroundColor = ConsoleColor.Red;
-                if (lastEnemy.Health.Current <= 0)
+                if (!lastEnemy.IsAlive())
                 {
                     Console.Write($"{lastEnemy.Type} Health: Defeated.");
                 }
@@ -159,34 +164,19 @@ namespace GameProg2_Project1FirstPlayable_NickPD
 
             messageLine++;
 
-            if (SparkleCollected == true)
+            if (!string.IsNullOrEmpty(gameManager.LastMessage))
             {
                 Console.SetCursorPosition(0, messageLine);
-                Console.WriteLine("Your Silver Sword has gained a little more endurance!");
+                Console.WriteLine(gameManager.LastMessage);
                 Console.Write("Press any key to continue.");
                 Console.ReadKey(true);
 
-                // Clear the message
+                // Clear
                 Console.SetCursorPosition(0, messageLine);
                 Console.WriteLine(new string(' ', Console.WindowWidth));
                 Console.Write(new string(' ', Console.WindowWidth));
 
-                SparkleCollected = false;
-            }
-
-            if (HealthPotionCollected == true)
-            {
-                Console.SetCursorPosition(0, messageLine);
-                Console.WriteLine("Your character has recovered some HP!");
-                Console.Write("Press any key to continue.");
-                Console.ReadKey(true);
-
-                // Clear the message
-                Console.SetCursorPosition(0, messageLine);
-                Console.WriteLine(new string(' ', Console.WindowWidth));
-                Console.Write(new string(' ', Console.WindowWidth));
-
-                HealthPotionCollected = false;
+                gameManager.LastMessage = null;
             }
 
             if (IsInFort == true)
@@ -219,35 +209,27 @@ namespace GameProg2_Project1FirstPlayable_NickPD
             return y >= 0 && y < Rows &&
                    x >= 0 && x < Cols;
         }
-        public bool IsSparkle(int y, int x)
+        public Item GetItemAt(int y, int x)
         {
-            int mapY = y - 1;
-            int mapX = x - 1;
-
-            return _map[mapY, mapX] == '*';
+            return _items.FirstOrDefault(i => i.X == x && i.Y == y);
         }
-        public bool IsHealthPotion(int y, int x)
+        public void AddItem(Item item)
         {
-            int mapY = y - 1;
-            int mapX = x - 1;
+            _items.Add(item);
 
-            return _map[mapY, mapX] == '+';
+            int mapY = item.Y - 1;
+            int mapX = item.X - 1;
+
+            _map[mapY, mapX] = item.Icon;
         }
-        public void RemoveSparkle(int y, int x)
+        public void RemoveItem(Item item)
         {
-            int mapY = y - 1;
-            int mapX = x - 1;
+            _items.Remove(item);
 
-            if (_map[mapY, mapX] == '*')
-                _map[mapY, mapX] = '▓';
-        }
-        public void RemoveHealthPotion(int y, int x)
-        {
-            int mapY = y - 1;
-            int mapX = x - 1;
+            int mapY = item.Y - 1;
+            int mapX = item.X - 1;
 
-            if (_map[mapY, mapX] == '+')
-                _map[mapY, mapX] = '▓';
+            _map[mapY, mapX] = item.ReplacementTile;
         }
         public bool IsFort(int y, int x)
         {
@@ -258,6 +240,5 @@ namespace GameProg2_Project1FirstPlayable_NickPD
             // will be a fort if it has this space.
             return _map[mapY, mapX] == '█';
         }
-
     }
 }

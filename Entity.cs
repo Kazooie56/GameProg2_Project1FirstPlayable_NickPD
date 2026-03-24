@@ -10,15 +10,13 @@ namespace GameProg2_Project1FirstPlayable_NickPD
     {
         public int X { get; private set; }
         public int Y { get; private set; }
-        public Health Health { get; private set; }
-
-        public Entity(int x, int y, int health) 
+        public char Icon { get; set; }
+        public Entity(int x, int y, char icon) 
         {
             Y = y;
             X = x;
-            Health = new Health(health);
+            Icon = icon;
         }
-
         public void SetPosition(int newX, int newY)
         {
             X = newX;

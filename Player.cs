@@ -6,17 +6,14 @@ using System.Threading.Tasks;
 
 namespace GameProg2_Project1FirstPlayable_NickPD
 {
-    //player class handles the player.
-    public class Player : Entity
+    public class Player : Character
     {
         private List<Weapon> _weapons = new List<Weapon>();
         public List<Weapon> Weapons
         {
             get { return _weapons; }
         }
-        private Random _random = new Random();
-
-        public Player(int startY, int startX) : base(startX, startY, 40)
+        public Player(int startY, int startX, string type, Health health) : base(startX, startY, '0', type, health)
         {
             _weapons.Add(new Weapon("Bronze Sword", new int[] { 5 }, 8));
             _weapons.Add(new Weapon("Iron Sword", new int[] { 7, 9 }, 6));
@@ -38,12 +35,11 @@ namespace GameProg2_Project1FirstPlayable_NickPD
 
             return (newY, newX);
         }
-
         public void DrawPlayer()
         {
             Console.SetCursorPosition(X, Y);
             Console.ForegroundColor = ConsoleColor.Blue;
-            Console.Write("0");
+            Console.Write($"{Icon}");
             Console.ResetColor();
         }
     }
