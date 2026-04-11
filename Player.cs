@@ -15,10 +15,10 @@ namespace GameProg2_Project1FirstPlayable_NickPD
         }
         public Player(int startY, int startX, string type, Health health) : base(startX, startY, '0', type, health)
         {
-            _weapons.Add(new Weapon("Bronze Sword", new int[] { 5 }, 8));
-            _weapons.Add(new Weapon("Iron Sword", new int[] { 7, 9 }, 6));
-            _weapons.Add(new Weapon("Steel Sword", new int[] { 11, 13, 15 }, 4));
-            _weapons.Add(new Weapon("Silver Sword", new int[] { 15, 17, 19, 23 }, 2));
+            _weapons.Add(new Weapon("Bronze Sword", new int[] { 5 }, 19));
+            _weapons.Add(new Weapon("Iron Sword", new int[] { 8 }, 14));
+            _weapons.Add(new Weapon("Steel Sword", new int[] { 12, 13, 14, 15, 16 }, 9));
+            _weapons.Add(new Weapon("Silver Sword", new int[] { 16, 18, 20, 24 }, 5));
         }
         public (int newY, int newX) MovePlayer(ConsoleKey key)
         {

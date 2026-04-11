@@ -7,9 +7,15 @@ using System.Threading.Tasks;
 namespace GameProg2_Project1FirstPlayable_NickPD
 {
     // Future to do list:
+    // make an if(console.width) check to stop it from breaking if you change the console width. (it doesn't need to write anything outside of it, just make sure it fixes next frame and doesnt crash)
+    // stop drawing the whole map each frame.
     // find a way to add weapons instead of hardcoding it.
     // have the weapon choices not be repeated code
-    // 
+    // implement settings
+    // add ending for beating all bad guys or the boss.
+    // add more enemies
+    // add more items
+    // make map bigger and not so laggy.
     public class GameManager
     {
         public Map Map;
@@ -30,7 +36,7 @@ namespace GameProg2_Project1FirstPlayable_NickPD
         public void Init()
         {
             Map = new Map("map.txt", ItemManager);
-            player = new Player(16, 2, "Player", new Health(40)); // 15th line down from the actual map, not including border, 2nd line to the right.
+            player = new Player(16, 2, "Player", new Health(Settings.PlayerStartHealth)); // 15th line down from the actual map, not including border, 2nd line to the right.
             enemyManager = new EnemyManager();
             LastEnemyFought = null;
             GameOver = false;
@@ -40,10 +46,11 @@ namespace GameProg2_Project1FirstPlayable_NickPD
             if (GameOver) return;
 
             if (input.HasValue)
+            {
                 MovePlayer(input.Value);
+            }
 
             MoveEnemies();
-
             CheckForDeaths();
         }
         public void Draw()
@@ -278,7 +285,6 @@ namespace GameProg2_Project1FirstPlayable_NickPD
                 Console.ReadKey();
             }
         }   
-
         public bool CheckForDeaths()
         {
             if (!player.IsAlive())
@@ -288,5 +294,18 @@ namespace GameProg2_Project1FirstPlayable_NickPD
 
             return GameOver;
         }
+
+        //private void AllEnemiesDefeated()
+        //{
+        //    // when enemies dead
+        //    {
+        //        Console.Clear();
+        //        Console.WriteLine("All enemies have been defeated and the battle is now over.");
+        //        Console.WriteLine("Congratulations!");
+        //        GameOver = true;
+        //        Console.WriteLine("Press any key to close the game.");
+        //        Console.ReadKey();
+        //    }
+        //}
     }
 }

@@ -11,11 +11,13 @@ namespace GameProg2_Project1FirstPlayable_NickPD
     {
         public string Type { get; set; } // would be class but classes are a code thing
         public Health Health { get; private set; }
+
         public Character(int x, int y, char icon, string type, Health health) : base(x, y, icon) // dont need to assign things in constructor that are in base
         {
             Type = type;
             Health = health;
         }
+
         public bool IsAlive()
         {
             return Health.Current > 0;

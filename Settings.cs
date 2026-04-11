@@ -12,11 +12,19 @@ namespace GameProg2_Project1FirstPlayable_NickPD
     public class Settings
     {
         // Player
-        public const int PlayerStartHealth = 40;
+        public static int PlayerStartHealth = 80;
 
-        // Enemy defaults
-        public const int BarbarianHealth = 16;
-        public const int MageHealth = 12;
+        // Enemy stats
+        public static int BossBarbarianHealth = 32;
+        public static int BarbarianHealth = 16;
+        public static int MageHealth = 12;
+        public static int TheifHealth = 16;
+        public static int MyrmidonHealth = 16;
+
+        // Health potion amount
+        public static int HealthPotion = 20;
+
+        
 
     }
 }

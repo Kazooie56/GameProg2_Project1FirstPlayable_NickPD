@@ -18,8 +18,7 @@ namespace GameProg2_Project1FirstPlayable_NickPD
 
         public override void OnCollect(Player player, GameManager gameManager)
         {
-            // I don't know why this is needed when it works fine for health potions and sparkles
-            Console.SetCursorPosition(0, Console.CursorTop);
+            Console.SetCursorPosition(0, Console.CursorTop);             // I don't know why this is needed when it works fine for health potions and sparkles
             Console.WriteLine(CollectMessage);
 
             var input = Console.ReadKey(true).Key;
@@ -38,7 +37,6 @@ namespace GameProg2_Project1FirstPlayable_NickPD
                         {
                             gameManager.Map._map[y, x] = '#';
                         }
-
                     }
                     Console.WriteLine("A pile of bones rises from the pits to reveal a new path!");
                     Console.ReadKey(true);
@@ -50,7 +48,6 @@ namespace GameProg2_Project1FirstPlayable_NickPD
                 Console.WriteLine("You step back and decide not to sacrifice health.");
                 Console.ReadKey(true);
                 RemoveOnCollect = false;
-
             }
         }
     }

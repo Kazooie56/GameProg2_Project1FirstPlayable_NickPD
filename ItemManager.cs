@@ -14,12 +14,36 @@ namespace GameProg2_Project1FirstPlayable_NickPD
             AllItems = new List<Item>();
 
             AllItems.Add(new Sparkle(10, 1));
-            AllItems.Add(new Sparkle(19, 1));
             AllItems.Add(new Sparkle(13, 5));
             AllItems.Add(new Sparkle(20, 12));
             AllItems.Add(new Sparkle(19, 17));
 
+            // New Sparkles
+            AllItems.Add(new Sparkle(11, 1));
+            AllItems.Add(new Sparkle(18, 1));
+            AllItems.Add(new Sparkle(20, 1));
+            AllItems.Add(new Sparkle(9, 2));
+            AllItems.Add(new Sparkle(10, 2));
+            AllItems.Add(new Sparkle(2, 5));
+            AllItems.Add(new Sparkle(1, 6));
+            AllItems.Add(new Sparkle(3, 6));
+            AllItems.Add(new Sparkle(5, 6));
+            AllItems.Add(new Sparkle(7, 6));
+            AllItems.Add(new Sparkle(17, 10));
+            AllItems.Add(new Sparkle(18, 10));
+            AllItems.Add(new Sparkle(19, 10));
+            AllItems.Add(new Sparkle(7, 14));
+            AllItems.Add(new Sparkle(6, 15));
+            AllItems.Add(new Sparkle(8, 15));
+            AllItems.Add(new Sparkle(7, 16));
+            AllItems.Add(new Sparkle(18, 16));
+            AllItems.Add(new Sparkle(8, 17));
+            AllItems.Add(new Sparkle(18, 17));
+            AllItems.Add(new Sparkle(20, 17));
+            AllItems.Add(new Sparkle(19, 18));
+
             AllItems.Add(new HealthPotion(9, 1));
+            AllItems.Add(new HealthPotion(19, 1));
             AllItems.Add(new HealthPotion(2, 6));
 
             AllItems.Add(new QuestionEvent(8, 4, (1, 7, 3, 7)));

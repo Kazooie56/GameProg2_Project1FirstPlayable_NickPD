@@ -16,7 +16,7 @@ namespace GameProg2_Project1FirstPlayable_NickPD
 
         public override void OnCollect(Player player, GameManager gameManager)
         {
-            player.Health.Heal(5);
+            player.Health.Heal(Settings.HealthPotion);
             gameManager.LastMessage = CollectMessage;
         }
     }

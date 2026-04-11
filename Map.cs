@@ -67,6 +67,8 @@ namespace GameProg2_Project1FirstPlayable_NickPD
         // REDRAW ONLY THE STUFF THAT GETS UPDATED
         public void DrawMap()
         {
+            Console.SetCursorPosition(0, 0);
+
             // Top border
             Console.Write("+");
             for (int i = 0; i < Cols; i++)
